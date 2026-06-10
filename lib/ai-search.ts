@@ -53,11 +53,17 @@ export async function generateWithAiSearch(params: {
 }
 
 function enhanceHttpError(status: number, message: string): string {
-  if (message.toLowerCase().includes('authentication')) {
+  const lower = message.toLowerCase()
+
+  if (lower.includes('authentication')) {
     return `${message}：請使用 Dashboard API Token（需 AI Search:Edit、AI Search:Run），不是 AI Gateway 的 cfut_ Token`
   }
 
-  if (status === 503) {
+  if (status === 503 && (lower.includes('high demand') || lower.includes('unavailable'))) {
+    return `${message}：模型暫時負載過高，請稍後再試`
+  }
+
+  if (status === 503 && (lower.includes('byok') || lower.includes('api key'))) {
     return `${message}：Gateway BYOK 需使用 alias「default」的 Google key`
   }
 
@@ -82,12 +88,31 @@ function formatHttpError(status: number, raw?: string) {
   return `HTTP ${status}`
 }
 
+function extractProviderErrorMessage(data: unknown): string | undefined {
+  if (typeof data !== 'object' || data === null) {
+    return undefined
+  }
+
+  for (const item of Object.values(data)) {
+    if (typeof item !== 'object' || item === null || !('error' in item)) {
+      continue
+    }
+
+    const error = item.error
+    if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
+      return error.message
+    }
+  }
+
+  return undefined
+}
+
 function getErrorMessage(data: unknown, status: number): string {
   if (isWrappedResponse(data)) {
     return formatApiError(data.errors) ?? formatHttpError(status)
   }
 
-  return formatHttpError(status)
+  return extractProviderErrorMessage(data) ?? formatHttpError(status)
 }
 
 function isChatCompletionResult(data: unknown): data is ChatCompletionResult {

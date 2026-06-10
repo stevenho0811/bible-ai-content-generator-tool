@@ -45,11 +45,8 @@
 	 * databases, object storage, AI inference, real-time communication and more.
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
+	"vars": {
+		"AI_SEARCH_INSTANCE_NAME": "bible-ai",
+		"CLOUDFLARE_ACCOUNT_ID": "0bcfd28dbc1257fb7f8d609ab7667072"
+	}
 }
